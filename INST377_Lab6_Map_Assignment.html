@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map of US</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <h1>Map of US</h1>
+    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="markers"></div>
+    
+    <script>
+        // Initialize the map and set view to the US coordinates
+        var map = L.map('map').setView([37.8, -96], 4); // Centers the map on the US
+
+        // Add a tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+        }).addTo(map);
+
+        // Function to get random coordinates in a specified range
+        function getRandomInRange(from, to, fixed) {
+          return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+        }
+
+        // Generate three random coordinates
+        var coords = [
+          { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-90, -100, 3) },
+          { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-90, -100, 3) },
+          { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-90, -100, 3) }
+        ];
+
+        // Add markers to the map and fetch localities
+        coords.forEach((coord, index) => {
+          // Add marker to map
+          var marker = L.marker([coord.lat, coord.lng]).addTo(map);
+          marker.bindPopup(`Marker ${index + 1}: Latitude: ${coord.lat}, Longitude: ${coord.lng}`).openPopup();
+
+          // API call to get locality
+          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coord.lat}&longitude=${coord.lng}&localityLanguage=en`)
+            .then(response => response.json())
+            .then(data => {
+              let locality = data.locality || 'Unknown Locality';
+              document.getElementById('markers').innerHTML += `<p>Marker ${index + 1}: Latitude: ${coord.lat}, Longitude: ${coord.lng}<br>Locality: ${locality}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
